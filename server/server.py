@@ -1,8 +1,11 @@
 import traceback
+import json
+import uuid
 
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
+
 
 
 app = Flask(__name__)
@@ -40,13 +43,93 @@ def handle_post_request():
 @app.route('/create-session', methods=["POST"])
 def createWorkoutSession():
     if request.method == "POST":
-        session_name = request.form['session_name']
 
-        col = db["workout-sessions"]
 
-        dict = {"name": "John", "address": "Highway 37"}
+        #get parameters
+        new_session = request.get_json()
 
-        x = col.insert_one(dict)
+
+        # make a new UUID for the new session
+        new_session["id"] = str(uuid.uuid4())
+
+        #read session file and write a new session
+        with open ("data/sessions", "r+") as file:
+
+            print(new_session)
+
+            data = json.load(file)
+
+            #append new session to saved session file
+            data["sessions"].append(new_session)#
+
+            file.seek(0)
+
+            json.dump(data, file, indent=4)
+
+
+
+            file.close()
+
+            return "", 200
+
+
+@app.route('/get-sessions', methods=["GET"])
+def getWorkoutSessions():
+    if request.method == "GET":
+
+        with open ("data/sessions", "r") as file:
+
+            data = json.load(file)
+
+            file.close()
+
+            return jsonify(data), 200
+
+
+@app.route('/join-session', methods=["POST"])
+def joinWorkoutSession():
+    if request.method == "POST":
+
+        #get parameters
+        join_request = request.get_json()
+
+        with open ("data/sessions", "r+") as file:
+
+            data = json.load(file)
+
+            #find session with id
+            for session in data["sessions"]:
+                if session["id"] == join_request["session_id"]:
+
+                    #append new user to session
+                    session["participants"].append(join_request["user_id"])
+
+                    file.seek(0)
+
+                    json.dump(data, file, indent=4)
+
+                    file.close()
+
+                    return "", 200
+
+            file.close()
+
+            return "Session does not exist.", 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -72,6 +155,3 @@ def read_saved_data():
 if __name__ == '__main__':
     app.run(debug=True)
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)  # Runs the Flask app on localhost at port 5000
