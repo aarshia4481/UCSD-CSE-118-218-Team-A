@@ -36,7 +36,7 @@ dependencies {
     implementation("androidx.percentlayout:percentlayout:1.0.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("androidx.health:health-services-client:1.0.0-beta03")
+    implementation("androidx.health:health-services-client:1.0.0-alpha03")
 
     // To use CallbackToFutureAdapter
     implementation("androidx.concurrent:concurrent-futures:1.1.0")

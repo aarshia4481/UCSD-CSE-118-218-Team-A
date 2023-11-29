@@ -10,7 +10,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.health.services.client.ExerciseClient;
+import androidx.health.services.client.ExerciseUpdateListener;
 import androidx.health.services.client.HealthServices;
 import androidx.health.services.client.HealthServicesClient;
 import androidx.health.services.client.data.Availability;
@@ -45,6 +47,10 @@ public class App extends Activity {
 
     private TextView heartRateTextView;
 
+    private HealthServicesClient healthClient;
+    private ExerciseClient exerciseClient;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -63,64 +69,60 @@ public class App extends Activity {
         String uuid = UUIDManager.getUUID(getApplicationContext());
 
 
+        String data = "{\"user\": \"" + uuid + "\"}";
 
-        String data = "{\"user\": \"" + uuid  + "\"}";
+    }
 
 
-        // Try to send POST request
-        client.sendPostRequest(data,  new HttpService.Callback() {
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-            @Override
-            public void onSuccess() {
-                System.out.println("Success sending POST request");
-            }
+        healthClient = HealthServices.getClient(this.getApplicationContext());
+        exerciseClient = healthClient.getExerciseClient();
 
-            @Override
-            public void onError(String errorMessage) {
+    }
 
-            }
-
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         //Try to access sensor data
         Context context = getApplicationContext();
         SensorService heartRate = new SensorService(context, client, heartRateTextView);
 
-        final HealthServicesClient healthClient = HealthServices.getClient(this.getApplicationContext());
-        final ExerciseClient exerciseClient = healthClient.getExerciseClient();
 
         ExerciseType exerciseType = ExerciseType.SQUAT;
-        exerciseConfigBuilder = ExerciseConfig.builder(exerciseType);
 
-        //Everything after this is related to healt services API
-        /*ListenableFuture<ExerciseCapabilities> capabilitiesListenableFuture =  exerciseClient.getCapabilitiesAsync();
+
+        //Everything after this is related to health services API
+        ListenableFuture<ExerciseCapabilities> capabilitiesListenableFuture =  exerciseClient.getCapabilities();
 
         Futures.addCallback(capabilitiesListenableFuture, new
-        FutureCallback<ExerciseCapabilities>() {
-            @Override
-            public void onSuccess(@Nullable ExerciseCapabilities result) {
-                try {
-                    ExerciseTypeCapabilities exerciseTypeCapabilities =
-                            result.getExerciseTypeCapabilities(exerciseType);
-                    Set<DataType<?, ?>> exerciseCapabilitiesSet =
-                            exerciseTypeCapabilities.getSupportedDataTypes();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-
-            }
-        }, Executors.newSingleThreadExecutor());
-
-        exerciseConfigBuilder = ExerciseConfig.builder(exerciseType);*/
-
-
-/*        ExerciseUpdateListener exerciseUpdateListener =
-                new ExerciseUpdateListener() {
+                FutureCallback<ExerciseCapabilities>() {
                     @Override
+                    public void onSuccess(@Nullable ExerciseCapabilities result) {
+                        Boolean capabilities  = result.getSupportedExerciseTypes()
+                                .contains(ExerciseType.SQUAT);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        // display an error
+                    }
+                },  ContextCompat.getMainExecutor(this));
+
+
+
+
+        ExerciseUpdateListener exerciseUpdateListener =
+                new ExerciseUpdateListener() {
+
+                    @Override
+                    public void onAvailabilityChanged(@NonNull DataType dataType, @NonNull Availability availability) {
+
+                    }
+
                     public void onExerciseUpdate(ExerciseUpdate update) {
                         updateRepCount(update);
                     }
@@ -132,15 +134,6 @@ public class App extends Activity {
                 };
 
 
-        ListenableFuture<Void> startExerciseListenableFuture = exerciseClient.startExercise(exerciseConfigBuilder.build());
-        ListenableFuture<Void> updateListenableFuture = exerciseClient.setUpdateListener(exerciseUpdateListener);
-
-
-    }*/
-
-   /* @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     public void onExerciseUpdate(@NonNull ExerciseUpdate update) {
@@ -153,7 +146,7 @@ public class App extends Activity {
 
     private void updateRepCount(ExerciseUpdate update) {
         System.out.println(update);
-*/
+
     }
 
 }
