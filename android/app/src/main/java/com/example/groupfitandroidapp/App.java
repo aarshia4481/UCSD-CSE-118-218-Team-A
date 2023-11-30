@@ -16,6 +16,7 @@ import androidx.health.services.client.ExerciseUpdateListener;
 import androidx.health.services.client.HealthServices;
 import androidx.health.services.client.HealthServicesClient;
 import androidx.health.services.client.data.Availability;
+import androidx.health.services.client.data.DataPoint;
 import androidx.health.services.client.data.DataType;
 import androidx.health.services.client.data.ExerciseCapabilities;
 import androidx.health.services.client.data.ExerciseConfig;
@@ -31,6 +32,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.crashlytics.buildtools.api.net.Constants;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -41,7 +43,7 @@ public class App extends Activity {
 
 
     private ExerciseConfig.Builder exerciseConfigBuilder;
-    HttpService client = new HttpService();
+  //  HttpService client = new HttpService();
 
 
 
@@ -62,7 +64,6 @@ public class App extends Activity {
         setContentView(R.layout.activity_main);
 
         heartRateTextView = findViewById(R.id.textViewHeartRate);
-
 
         // Create WebSocket connection
         //get userID
@@ -89,7 +90,7 @@ public class App extends Activity {
 
         //Try to access sensor data
         Context context = getApplicationContext();
-        SensorService heartRate = new SensorService(context, client, heartRateTextView);
+        //SensorService heartRate = new SensorService(context, client, heartRateTextView);
 
 
         ExerciseType exerciseType = ExerciseType.SQUAT;
@@ -133,19 +134,25 @@ public class App extends Activity {
                     }
                 };
 
+        ExerciseConfig config = ExerciseConfig.builder().setExerciseType(exerciseType).build();
+
+        ListenableFuture<Void> startExerciseListenableFuture =  exerciseClient.startExercise(config);
+        ListenableFuture<Void> updateListenableFuture = exerciseClient.setUpdateListener(exerciseUpdateListener);
+
 
     }
 
-    public void onExerciseUpdate(@NonNull ExerciseUpdate update) {
-        try {
-            updateRepCount(update);
-        } catch (Exception exception) {
-            Log.e("Error getting exercise update: ", exception.toString());
-        }
-    }
 
     private void updateRepCount(ExerciseUpdate update) {
-        System.out.println(update);
+        System.out.println("Exercise client: " + update.getLatestMetrics());
+
+        List<DataPoint> rep_count = update.getLatestMetrics().get(DataType.REP_COUNT);
+
+
+        if (rep_count != null) {
+            System.out.println(rep_count.get(0).getValue().asLong());
+        }
+
 
     }
 
