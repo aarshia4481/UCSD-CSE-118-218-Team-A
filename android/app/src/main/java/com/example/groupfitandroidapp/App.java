@@ -48,6 +48,7 @@ public class App extends Activity {
 
 
     private TextView heartRateTextView;
+    private TextView repCounterTextView;
 
     private HealthServicesClient healthClient;
     private ExerciseClient exerciseClient;
@@ -64,6 +65,7 @@ public class App extends Activity {
         setContentView(R.layout.activity_main);
 
         heartRateTextView = findViewById(R.id.textViewHeartRate);
+        repCounterTextView = findViewById(R.id.textViewRepCounter);
 
         // Create WebSocket connection
         //get userID
@@ -144,14 +146,15 @@ public class App extends Activity {
 
 
     private void updateRepCount(ExerciseUpdate update) {
-        System.out.println("Exercise client: " + update.getLatestMetrics());
 
         List<DataPoint> rep_count = update.getLatestMetrics().get(DataType.REP_COUNT);
-
-
         if (rep_count != null) {
-            System.out.println(rep_count.get(0).getValue().asLong());
+            long reps = rep_count.get(0).getValue().asLong();
+            System.out.println(reps);
+            repCounterTextView.setText("Rep counter: " + reps);
         }
+
+
 
 
     }
