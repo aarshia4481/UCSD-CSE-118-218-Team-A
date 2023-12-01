@@ -160,3 +160,5 @@ public class App extends Activity {
     }
 
 }
+//start app, join session and create session
+//for join session - automatically go to the heart rate and r
