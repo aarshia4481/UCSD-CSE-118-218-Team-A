@@ -3,15 +3,12 @@ import json
 import uuid
 
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
-from flask_cors import CORS
+
 
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/data": {"origins": "*"}})
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/groupfit'
-db = MongoClient(app.config['MONGO_URI'])
+
 
 
 @app.route('/post', methods=['POST'])
@@ -152,6 +149,4 @@ def read_saved_data():
     except FileNotFoundError:
         return None
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
