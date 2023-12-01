@@ -1,4 +1,3 @@
-import numpy as np
 #Create a class audio stream that will be used to provide an endpoint for audio streaming
 
 class AudioStream:

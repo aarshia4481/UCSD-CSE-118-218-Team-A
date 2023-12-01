@@ -11,7 +11,7 @@ class WorkoutSession:
         self.creator_id = creator_id
         self.participants = participants
         self.session_id = str(uuid.uuid4())
-        self.active = True
+        self.state = "created"
 
 # class Participant:
 #     def __init__(self, name, age, gender, session_id):
