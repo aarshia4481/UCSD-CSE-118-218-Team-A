@@ -74,6 +74,8 @@ public class App extends Activity {
 
         String data = "{\"user\": \"" + uuid + "\"}";
 
+        HttpService.sendPostRequest(data);
+
     }
 
 
