@@ -60,3 +60,15 @@ public class HttpService {
         void onError(String errorMessage);
     }
 }
+//    Create session POST
+//
+//{
+//    "session_name": "My first session3",
+//        "creator_id": "eyJhbGciOiJSU0EtT0FF"
+//}
+//{
+//        "session_name": "123",
+//        "user_id": "djidubd"
+//        }
+//have join and create session both go to screen where they can have user input session name
+// and send session name and user id to backend

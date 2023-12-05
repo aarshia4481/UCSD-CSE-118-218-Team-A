@@ -2,13 +2,10 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,24 +44,5 @@ public class Session extends Activity {
         setContentView(R.layout.session_selection_view);
         Button joinButton = findViewById(R.id.button2);
         Button createButton = findViewById(R.id.button3);
-        joinButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                // Create an Intent to start the new activity
-                Intent intent = new Intent(Session.this, App.class);
 
-                // Start the new activity
-                startActivity(intent);
-        }});
     }
-        createButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                // Create an Intent to start the new activity
-                Intent intent = new Intent(Session.this, App.class);
-
-                // Start the new activity
-                startActivity(intent);
-            })
-        }
-}

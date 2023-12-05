@@ -25,7 +25,12 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
 
+<<<<<<< Updated upstream
         <activity android:name=".Session" android:exported="true" >
+=======
+        <activity android:name=".Session"
+            android:exported="true">
+>>>>>>> Stashed changes
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
