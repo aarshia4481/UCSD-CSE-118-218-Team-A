@@ -28,10 +28,12 @@ class HeartRateMeasurement:
         self.workout_session_id = workout_session_id
 
 class ExerciseLog:
-    def __init__(self, exercise_type, reps_completed, participant_id, workout_session_id):
+    def __init__(self, exercise_type, reps_completed, participant_id, workout_session_id, timestamp):
         self.exercise_type = exercise_type
         self.reps_completed = reps_completed
         self.participant_id = participant_id
         self.workout_session_id = workout_session_id
+        self.timestamp = timestamp
+
 
 

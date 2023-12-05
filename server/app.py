@@ -1,21 +1,10 @@
-import traceback
 import json
-import uuid
-import wave
-from os import path
+import traceback
 
-import pyaudio
-from flask import Flask, request, jsonify, Response
-from urllib.parse import quote_plus
+from flask import Flask, request, jsonify, Response, stream_with_context
 from pymongo.mongo_client import MongoClient
+
 from AudioStream import AudioStream
-
-
-from flask_pymongo import PyMongo
-
-
-# Example usage:
-
 # # Inserting a workout session
 # workout_session = WorkoutSession("2023-11-30T10:00:00", "Gym XYZ")
 # mongo.db.workout_sessions.insert_one(workout_session.__dict__)
@@ -31,7 +20,10 @@ from flask_pymongo import PyMongo
 # # Inserting an exercise log
 # exercise_log = ExerciseLog("Bench Press", 10, 100, "2023-11-30T10:30:00", "2023-11-30T10:35:00", 1)  # Assuming participant ID is 1
 # mongo.db.exercise_logs.insert_one(exercise_log.__dict__)
-from model.WorkoutDataModel import WorkoutSession
+from WorkoutService import WorkoutService
+from model.DataModel import WorkoutSession, ExerciseLog
+
+# Example usage:
 
 app = Flask(__name__)
 
@@ -52,24 +44,16 @@ collection = db.get_collection("workout_sessions")
 
 
 
-@app.route('/post/workout-data', methods=['POST'])
+@app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
     if request.method == 'POST':
         try:
             # Get the JSON data sent by the client
             data = request.get_json()
 
-            # Check if the file exists
-            file_name = "data/" + data["datatype"] + '.json'
-            file_exists = path.exists(file_name)
+            #insert new datapoint into database
+            db.get_collection("exercise_logs").insert_one(ExerciseLog(data["exercise_type"], data["reps_completed"], data["participant_id"], data["workout_session_id"], data["timestamp"]).__dict__)
 
-            # Append or create the file and write the received data
-            with open(file_name, 'a') as file:
-                if file_exists:
-                    file.write('\n')  # Add a new line before appending
-                file.write(str(data))
-
-            return "", 200  # You can adjust the response data and status code as needed
         except Exception:
             print("Error handling the request:")
             traceback.print_exc()
@@ -130,9 +114,8 @@ def joinWorkoutSession():
             return "Session does not exist.", 400
 
 
-
-@app.route("/complete-session", methods=["POST"])
-def completeWorkoutSession():
+@app.route("/finish-session", methods=["POST"])
+def finsihWorkoutSession():
     if request.method == "POST":
 
         #get parameters
@@ -146,7 +129,7 @@ def completeWorkoutSession():
         if session:
 
             #update session in database
-            db.get_collection("workout_sessions").update_one({"session_id": session_id}, {"$set": {"active": "false"}})
+            db.get_collection("workout_sessions").update_one({"session_id": session_id}, {"$set": {"state": "finished"}})
 
             return "Session completed.", 200
 
@@ -154,49 +137,58 @@ def completeWorkoutSession():
             return "Session does not exist.", 400
 
 
+@app.route("/start-session", methods=["POST"])
+def startWorkoutSession():
+    if request.method == "POST":
+
+        #get parameters
+        session_id = request.get_json()["session_id"]
+
+        workout_service = WorkoutService(session_id)
+        workout_service.start()
+
+        print(session_id)
+
+
+        return "Session started.", 200
+
+
 @app.route('/stream_audio')
 def stream_audio():
+
+
     audio_stream = AudioStream()
 
     return Response(audio_stream.generate(), mimetype="audio/mpeg")
 
-
-# just for testing
-@app.route('/data', methods=['GET'])
-def get_heart_rate():
-    saved_data = read_saved_data()
-    if saved_data:
-        return jsonify(saved_data), 200
-    else:
-        return 'No data available', 404
+@app.route('/stream_audio2')
+def stream_audio2():
+    audio_stream = AudioStream()
 
 
-@app.route('/test', methods=['GEt'])
+
+    response = Response(stream_with_context(audio_stream.generate2()), mimetype="audio/mpeg", content_type="audio/mpeg")
+    ##response.headers['Content-Length'] = str(20000000)
+    response.headers['Accept-Ranges'] = 'bytes'
+    return response
+
+
+
+
+## just for testing
+@app.route('/test', methods=['GET'])
 def test():
 
     print(client)
     print(db)
     print(collection)
 
-    workout_session = WorkoutSession("session 1", "id28982782")
-    collection.insert_one(workout_session.__dict__)
 
     return "hello world", 200
-
-# Function to read the previously saved file
-def read_saved_data():
-    try:
-        with open('received_data.json', 'r') as file:
-            data = file.read()
-            return data
-    except FileNotFoundError:
-        return None
-
-
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=443, ssl_context=("adhoc"))
 
 
