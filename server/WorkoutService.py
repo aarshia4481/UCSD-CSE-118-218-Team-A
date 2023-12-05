@@ -47,7 +47,7 @@ class WorkoutService(Thread):
         if not os.path.exists(new_folder_path):
             os.mkdir(os.getcwd() + "/audio/" + self.session_name)
 
-        self.tts_service.generateAudio(self.session_name + "/output1.mp3")
+        self.tts_service.generateAudio(self.session_name + "/output1.mp3", output1)
 
         i = 0
         while True:
@@ -63,7 +63,7 @@ class WorkoutService(Thread):
                 print(hr_datapoint)
                 if  hr_datapoint["value"] > 80 and hr_flag == False:
                     output2 = participants[0] + " your heart rate is too high. Please take a break."
-                    self.tts_service.generateAudio(self.session_name + "/output2.mp3")
+                    self.tts_service.generateAudio(self.session_name + "/output2.mp3", output2)
                     hr_flag = True
 
 

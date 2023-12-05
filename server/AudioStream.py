@@ -5,8 +5,8 @@ from time import sleep
 class AudioStream:
 
 
-    def __init__(self, session_id):
-        self.session_id = session_id
+    def __init__(self, session_name):
+        self.session_name = session_name
 
     def get_files_in_folder(self, folder_path):
         files_list = []
@@ -16,53 +16,58 @@ class AudioStream:
         return files_list
 
 
-    def getChunks(self, filepath):
-        with open(filepath, 'rb') as audio_file:
-            while True:
-                audio_chunk = audio_file.read(1024)
-                if not audio_chunk:
-                    break
-                yield audio_chunk
 
 
     def generate(self):
         # build audio file path from session id
-        audio_dict = "audio/" + self.session_id
+        audio_dict = "audio/" + self.session_name
 
         # get all audio files from audio_dict
         audio_files = self.get_files_in_folder(audio_dict)
         audio_files_count = len(audio_files)
 
+        print(audio_dict)
         print(audio_files_count)
 
         # Track the last played audio file index
-        last_played_index = 0
+        play_index = 0
 
         while True:
-            # Loop through audio files starting from the last played index
-            while last_played_index < audio_files_count:
-                print(last_played_index)
-                print("playing")
-                sleep(5)
-                audio_file = audio_files[last_played_index+1]
-                for chunk in self.getChunks(os.path.join(audio_dict, audio_file)):
-                    if not chunk:
-                        last_played_index += last_played_index  # Update last played index
-                        break
-                    yield chunk
+
+            while play_index < audio_files_count:
+                print("Play now: " + str(play_index))
+
+
+                audio_file_path = audio_files[play_index]
+
+
+                with open(audio_dict + "/" + audio_file_path, 'rb') as audio_file:
+                        while True:
+                            audio_chunk = audio_file.read(1024)
+                            if not audio_chunk:
+                                play_index += 1
+                                sleep(7)
+                                break
+
+                            yield audio_chunk
 
 
             # If no new audio files, play the fallback audio in a loop
-            while last_played_index >= audio_files_count:
+            while play_index >= audio_files_count:
                 print("fallback")
                 fallback_audio_file = 'audio/song2_parsed1.mp3'  # Replace with your fallback audio
-                for chunk in self.getChunks(os.path.join(audio_dict, fallback_audio_file)):
-                    if not chunk:
-                        break
-                    yield chunk
+
+                with open(fallback_audio_file, 'rb') as fallback_audio:
+                    while True:
+                        audio_chunk = fallback_audio.read(1024)
+                        if not audio_chunk:
+                            sleep(7)
+                            break
+
+                        yield audio_chunk
 
                 # Check for new audio files after playing the fallback
-                self.check_for_new_files(audio_dict, audio_files, audio_files_count)
+                audio_files = self.get_files_in_folder(audio_dict)
                 audio_files_count = len(audio_files)
 
     def check_for_new_files(self, audio_dict, audio_files, current_count):

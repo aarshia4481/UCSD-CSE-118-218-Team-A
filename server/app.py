@@ -29,6 +29,7 @@ app = Flask(__name__)
 
 # Replace the connection string with your MongoDB URI
 uri = "mongodb+srv://user:cse218@groupfit.l7ynwiw.mongodb.net/?retryWrites=true&w=majority"
+uri_local = 'localhost:27017'
 # Create a new client and connect to the server
 client = MongoClient(uri)
 # Send a ping to confirm a successful connection
@@ -81,7 +82,7 @@ def createWorkoutSession():
         #insert session into database
         db.get_collection("workout_sessions").insert_one(new_session.__dict__)
 
-        return "", 200
+        return "Session created.", 200
 
 
 @app.route('/get-sessions', methods=["GET"])
@@ -160,10 +161,10 @@ def startWorkoutSession():
 def stream_audio():
 
     if request.method == 'GET':
-        session_id = request.args.get('session_id')
+        session_id = request.args.get('session_name')
 
     if session_id == None:
-        return "No session id provided.", 400
+        return "No session name provided.", 400
 
 
     audio_stream = AudioStream(session_id)

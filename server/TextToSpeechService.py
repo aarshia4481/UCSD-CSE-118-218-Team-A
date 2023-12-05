@@ -15,7 +15,7 @@ class TextToSpeechService:
 
 
 
-    def generateAudio(self, filename):
+    def generateAudio(self, filename, text):
 
 
         url = f"https://westus.tts.speech.microsoft.com/cognitiveservices/v1"
@@ -27,16 +27,18 @@ class TextToSpeechService:
         }
         data = """
         <speak version='1.0' xml:lang='en-US'>
-            <voice xml:lang='en-US' xml:gender='Female' name='en-US-JennyNeural'>Welcome to GroupFit! Let's get started.</voice>
+            <voice xml:lang='en-US' xml:gender='Female' name='en-US-JennyNeural'>{}</voice>
         </speak>
         """
+
+        data = data.format(text)
 
         response = requests.post(url, headers=headers, data=data, stream=True)
         if response.status_code == 200:
             with open('audio/' + filename, 'wb') as audio_file:
                 for chunk in response.iter_content(chunk_size=1024):
                     audio_file.write(chunk)
-            print("MP3 file saved as output.mp3")
+            print("MP3 file saved as  " + filename + ".")
         else:
             print("Failed to generate MP3:", response.status_code, response.text)
 
