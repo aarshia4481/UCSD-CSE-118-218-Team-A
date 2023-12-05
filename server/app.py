@@ -51,11 +51,21 @@ def handle_post_request():
             # Get the JSON data sent by the client
             data = request.get_json()
 
-            #insert new datapoint into database
-            db.get_collection("exercise_logs").insert_one(ExerciseLog(data["exercise_type"], data["reps_completed"], data["participant_id"], data["workout_session_id"], data["timestamp"]).__dict__)
+            if (data["datatype"] == "hr_data"):
+                #insert new datapoint into database
+                print(db.get_collection("heart_rate_measurements"))
+                db.get_collection("heart_rate_measurements").insert_one({"value": data["value"], "user_id": data["user_id"], "workout_session_name": data["workout_session_name"], "timestamp": data["timestamp"]})
 
-        except Exception:
+            elif data["datatype"] == "rep_counter":
+
+                #insert new datapoint into database
+                db.get_collection("exercise_logs").insert_one(ExerciseLog(data["exercise_type"], data["reps_completed"], data["participant_id"], data["workout_session_id"], data["timestamp"]).__dict__)
+
+            return 'Data saved.', 200
+
+        except Exception as e:
             print("Error handling the request:")
+            print(e)
             traceback.print_exc()
             return 'Error processing request', 400
 
@@ -92,26 +102,18 @@ def joinWorkoutSession():
         #get parameters
         join_request = request.get_json()
 
-        with open ("data/sessions.json", "r+") as file:
+        # check if session exists in database
+        session = db.get_collection("workout_sessions").find_one({"session_name": join_request["session_name"]})
 
-            data = json.load(file)
-            session_id = join_request["session_id"]
-
-            # check if session exists in database
-            session = db.get_collection("workout_sessions").find_one({"session_id": session_id}, {"_id": 0})
-            print(session)
-
-            #if session exists, add participant to session
-            if session:
-                session["participants"].append(join_request["user_id"])
+        #if session exists, add participant to session
+        if session:
 
                 #update session in database
-                db.get_collection("workout_sessions").update_one({"id": session_id}, {"$set": session})
+                db.get_collection("workout_sessions").update_one({"session_name": join_request["session_name"]}, {"$push": {"participants": join_request["user_id"]}})
 
-                return "Joined session.", 200
-
-
-            return "Session does not exist.", 400
+                return "Participant added to session.", 200
+        else:
+                return "Session does not exist.", 400
 
 
 @app.route("/finish-session", methods=["POST"])
@@ -143,8 +145,9 @@ def startWorkoutSession():
 
         #get parameters
         session_id = request.get_json()["session_id"]
+        session_name = request.get_json()["session_name"]
 
-        workout_service = WorkoutService(session_id)
+        workout_service = WorkoutService(session_id, session_name)
         workout_service.start()
 
         print(session_id)
@@ -153,25 +156,19 @@ def startWorkoutSession():
         return "Session started.", 200
 
 
-@app.route('/stream_audio')
+@app.route('/stream_audio/')
 def stream_audio():
 
+    if request.method == 'GET':
+        session_id = request.args.get('session_id')
 
-    audio_stream = AudioStream()
+    if session_id == None:
+        return "No session id provided.", 400
+
+
+    audio_stream = AudioStream(session_id)
 
     return Response(audio_stream.generate(), mimetype="audio/mpeg")
-
-@app.route('/stream_audio2')
-def stream_audio2():
-    audio_stream = AudioStream()
-
-
-
-    response = Response(stream_with_context(audio_stream.generate2()), mimetype="audio/mpeg", content_type="audio/mpeg")
-    ##response.headers['Content-Length'] = str(20000000)
-    response.headers['Accept-Ranges'] = 'bytes'
-    return response
-
 
 
 

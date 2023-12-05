@@ -21,11 +21,11 @@ class WorkoutSession:
 #         self.session_id = session_id
 
 class HeartRateMeasurement:
-    def __init__(self, timestamp, heart_rate, participant_id, workout_session_id):
+    def __init__(self, timestamp, heart_rate, user_id, workout_session_name):
         self.timestamp = timestamp
-        self.heart_rate = heart_rate
-        self.participant_id = participant_id
-        self.workout_session_id = workout_session_id
+        self.value = heart_rate
+        self.user_id = user_id
+        self.workout_session_name = workout_session_name
 
 class ExerciseLog:
     def __init__(self, exercise_type, reps_completed, participant_id, workout_session_id, timestamp):
