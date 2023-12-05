@@ -2,6 +2,7 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -43,7 +44,7 @@ public class App extends Activity {
 
 
     private ExerciseConfig.Builder exerciseConfigBuilder;
-  //  HttpService client = new HttpService();
+
 
 
 
@@ -52,6 +53,8 @@ public class App extends Activity {
 
     private HealthServicesClient healthClient;
     private ExerciseClient exerciseClient;
+
+    private SharedPreferences sharedPref;
 
 
     @Override
@@ -67,12 +70,23 @@ public class App extends Activity {
         heartRateTextView = findViewById(R.id.textViewHeartRate);
         repCounterTextView = findViewById(R.id.textViewRepCounter);
 
-        // Create WebSocket connection
+
         //get userID
         String uuid = UUIDManager.getUUID(getApplicationContext());
 
 
-        String data = "{\"user\": \"" + uuid + "\"}";
+        // Get SharedPreferences instance to store data between activities such as group session id
+        sharedPref = getSharedPreferences("groupfit.SHARED_PREFERENCES", Context.MODE_PRIVATE);
+
+        // Get SharedPreferences editor
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        // Put data into SharedPreferences
+        editor.putString("uuid", uuid);
+
+        // mock session
+        editor.putString("session_id", uuid);
+        editor.apply(); // Apply changes
 
         HttpService.sendPostRequest(data);
 
@@ -108,7 +122,7 @@ public class App extends Activity {
                     @Override
                     public void onSuccess(@Nullable ExerciseCapabilities result) {
                         Boolean capabilities  = result.getSupportedExerciseTypes()
-                                .contains(ExerciseType.SQUAT);
+                                .contains(exerciseType);
                     }
 
                     @Override
@@ -135,6 +149,7 @@ public class App extends Activity {
                     @Override
                     public void onLapSummary(ExerciseLapSummary summary) {
                         //Processing Lap Summary
+                        System.out.println("Lap completed: " + summary);
                     }
                 };
 
@@ -152,13 +167,27 @@ public class App extends Activity {
         List<DataPoint> rep_count = update.getLatestMetrics().get(DataType.REP_COUNT);
         if (rep_count != null) {
             long reps = rep_count.get(0).getValue().asLong();
-            System.out.println(reps);
             repCounterTextView.setText("Rep counter: " + reps);
+
+
+            //send data to server
+            String exerciseType = String.valueOf(ExerciseType.SQUAT);
+            String workoutSessionId = sharedPref.getString("session_id", "none");
+
+
+
+            String exerciseLogJson = "{\"exercise_type\":\"" + exerciseType + "\",\"reps_completed\":" + reps + ",\"participant_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_id\":\"" + workoutSessionId + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
+            HttpService.sendPostRequest(exerciseLogJson);
         }
 
+    }
 
 
+    @Override
+    protected void onStop() {
 
+        super.onStop();
+        ListenableFuture<Void> endExerciseListenableFuture =  exerciseClient.endExercise();
     }
 
 }

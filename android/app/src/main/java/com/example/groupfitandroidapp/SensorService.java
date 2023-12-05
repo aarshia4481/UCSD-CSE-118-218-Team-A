@@ -40,18 +40,7 @@ public class SensorService implements SensorEventListener {
 
 
         //Post update to server
-         client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}", new HttpService.Callback() {
-
-             @Override
-             public void onSuccess() {
-                 System.out.println("Success sending POST request");
-             }
-
-             @Override
-             public void onError(String errorMessage) {
-                 System.out.println("Failed sending POST request");
-                 System.out.println(errorMessage);
-             }});
+         client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}");
 
     }
 
