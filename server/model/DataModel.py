@@ -13,12 +13,11 @@ class WorkoutSession:
         self.session_id = str(uuid.uuid4())
         self.state = "created"
 
-# class Participant:
-#     def __init__(self, name, age, gender, session_id):
-#         self.name = name
-#         self.age = age
-#         self.gender = gender
-#         self.session_id = session_id
+
+class user:
+     def __init__(self,  alexa_id, watch_id):
+            self.alexa_id = alexa_id
+            self.watch_id = watch_id
 
 class HeartRateMeasurement:
     def __init__(self, timestamp, heart_rate, user_id, workout_session_name):
