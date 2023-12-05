@@ -10,12 +10,11 @@ import java.util.concurrent.Executors;
 
 public class HttpService {
 
-    private static final URL url; // Replace with your Flask server URL
+    private static final URL url;
 
     static {
         try {
-
-            url = new URL("https://94a9-137-110-116-189.ngrok-free.app/post");
+            url = new URL("https://groupfit-server.fly.dev");
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -23,7 +22,7 @@ public class HttpService {
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public static void sendPostRequest(final String jsonData, final Callback callback) {
+    public static void sendPostRequest(final String jsonData) {
         executor.execute(() -> {
             HttpURLConnection con = null;
             try {
@@ -40,12 +39,12 @@ public class HttpService {
 
                 int responseCode = con.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    callback.onSuccess(); // Notify success
+
                 } else {
-                    callback.onError("HTTP Error: " + responseCode); // Notify error
+
                 }
             } catch (IOException e) {
-                callback.onError(e.getMessage()); // Notify error
+
             } finally {
                 if (con != null) {
                     con.disconnect();
