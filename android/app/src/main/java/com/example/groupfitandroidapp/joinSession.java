@@ -2,10 +2,14 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,7 +48,7 @@ public class joinSession extends Activity {
         setContentView(R.layout.join_session);
         final EditText editTextName = findViewById(R.id.editTextName2);
         Button buttonSubmit = findViewById(R.id.buttonSubmit2);
-        buttonSubmit2.setOnClickListener(new View.OnClickListener() {
+        buttonSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Get the entered name
@@ -53,8 +57,9 @@ public class joinSession extends Activity {
                 // Create an intent to send the result back to the calling activity
                 // Create an Intent to start the new activity
                 String uuid = UUIDManager.getUUID(getApplicationContext());
-                String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"participant_id\":\"" + uuid "\"}";
-                HttpService.sendPostRequest(exerciseLogJson);
+                String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"user_id\":\"" + uuid
+                + "\"}";
+                HttpService.sendPostRequest(exerciseLogJson, "/join-session");
                 Intent intent = new Intent(joinSession.this, App.class);
 
                 // Start the new activity
@@ -70,6 +75,8 @@ public class joinSession extends Activity {
         });
 
     }
+
+}
 
 
 

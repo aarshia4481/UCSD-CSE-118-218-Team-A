@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 public class Session extends Activity {
+    Button createButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +56,8 @@ public class Session extends Activity {
 
                 // Start the new activity
                 startActivity(intent);
-        }});
-    }
+            }});
+
         createButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -65,6 +66,7 @@ public class Session extends Activity {
 
                 // Start the new activity
                 startActivity(intent);
-            })
-        }
+            }});
+    }
+
 }

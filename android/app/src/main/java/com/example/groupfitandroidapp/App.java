@@ -88,7 +88,7 @@ public class App extends Activity {
 //        editor.putString("session_id", uuid);
 //        editor.apply(); // Apply changes
 
-        HttpService.sendPostRequest(data);
+        //HttpService.sendPostRequest(data);
 
     }
 
@@ -177,7 +177,7 @@ public class App extends Activity {
 
 
             String exerciseLogJson = "{\"exercise_type\":\"" + exerciseType + "\",\"reps_completed\":" + reps + ",\"participant_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_id\":\"" + workoutSessionId + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
-            HttpService.sendPostRequest(exerciseLogJson);
+            HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data");
         }
 
     }

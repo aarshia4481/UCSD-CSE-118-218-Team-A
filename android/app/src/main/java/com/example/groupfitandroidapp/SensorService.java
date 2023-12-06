@@ -40,7 +40,7 @@ public class SensorService implements SensorEventListener {
 
 
         //Post update to server
-         client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}");
+         client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}", "/post-workout-data");
 
     }
 

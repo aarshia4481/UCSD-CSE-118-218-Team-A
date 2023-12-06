@@ -2,10 +2,14 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -53,8 +57,9 @@ public class createSession extends Activity {
                 // Create an intent to send the result back to the calling activity
                 // Create an Intent to start the new activity
                 String uuid = UUIDManager.getUUID(getApplicationContext());
-                String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"participant_id\":\"" + uuid "\"}";
-                HttpService.sendPostRequest(exerciseLogJson);
+                String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"creator_id\":\"" + uuid
+                        + "\"}";
+                HttpService.sendPostRequest(exerciseLogJson, "/create-session");
 
                 Intent intent = new Intent(createSession.this, App.class);
 
@@ -70,7 +75,9 @@ public class createSession extends Activity {
             }
         });
 
+
     }
+}
 
 
 

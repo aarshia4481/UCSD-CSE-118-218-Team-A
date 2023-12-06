@@ -10,23 +10,24 @@ import java.util.concurrent.Executors;
 
 public class HttpService {
 
-    private static final URL url;
 
-    static {
-        try {
-            url = new URL("https://groupfit-server.fly.dev");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
+    static String url = "https://5067-69-196-44-85.ngrok-free.app";
+
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public static void sendPostRequest(final String jsonData) {
+    public static void sendPostRequest(final String jsonData, String endpoint) {
         executor.execute(() -> {
             HttpURLConnection con = null;
+            URL final_url;
             try {
-                con = (HttpURLConnection) url.openConnection();
+                final_url = new URL(url + endpoint );
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                con = (HttpURLConnection) final_url.openConnection();
                 con.setRequestMethod("POST");
                 con.setRequestProperty("Content-Type", "application/json");
                 con.setRequestProperty("Accept", "application/json");
@@ -38,12 +39,11 @@ public class HttpService {
                 }
 
                 int responseCode = con.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
+                System.out.println(responseCode);
 
-                } else {
 
-                }
             } catch (IOException e) {
+                System.out.println(e.getStackTrace());
 
             } finally {
                 if (con != null) {
@@ -53,21 +53,4 @@ public class HttpService {
         });
     }
 
-    public interface Callback {
-        void onSuccess();
-
-        void onError(String errorMessage);
-    }
 }
-//    Create session POST
-//
-//{
-//    "session_name": "My first session3",
-//        "creator_id": "eyJhbGciOiJSU0EtT0FF"
-//}
-//{
-//        "session_name": "123",
-//        "user_id": "djidubd"
-//        }
-//have join and create session both go to screen where they can have user input session name
-// and send session name and user id to backend
