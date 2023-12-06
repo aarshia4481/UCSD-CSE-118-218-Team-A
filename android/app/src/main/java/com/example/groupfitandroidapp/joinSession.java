@@ -37,14 +37,14 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
-public class createSession extends Activity {
+public class joinSession extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_session);
-        final EditText editTextName = findViewById(R.id.editTextName);
-        Button buttonSubmit = findViewById(R.id.buttonSubmit);
-        buttonSubmit.setOnClickListener(new View.OnClickListener() {
+        setContentView(R.layout.join_session);
+        final EditText editTextName = findViewById(R.id.editTextName2);
+        Button buttonSubmit = findViewById(R.id.buttonSubmit2);
+        buttonSubmit2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Get the entered name
@@ -55,8 +55,7 @@ public class createSession extends Activity {
                 String uuid = UUIDManager.getUUID(getApplicationContext());
                 String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"participant_id\":\"" + uuid "\"}";
                 HttpService.sendPostRequest(exerciseLogJson);
-
-                Intent intent = new Intent(createSession.this, App.class);
+                Intent intent = new Intent(joinSession.this, App.class);
 
                 // Start the new activity
                 startActivity(intent);

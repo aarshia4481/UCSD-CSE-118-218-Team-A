@@ -51,7 +51,7 @@ public class Session extends Activity {
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the new activity
-                Intent intent = new Intent(Session.this, App.class);
+                Intent intent = new Intent(Session.this, joinSession.class);
 
                 // Start the new activity
                 startActivity(intent);
@@ -61,7 +61,7 @@ public class Session extends Activity {
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the new activity
-                Intent intent = new Intent(Session.this, App.class);
+                Intent intent = new Intent(Session.this, createSession.class);
 
                 // Start the new activity
                 startActivity(intent);

@@ -85,8 +85,8 @@ public class App extends Activity {
         editor.putString("uuid", uuid);
 
         // mock session
-        editor.putString("session_id", uuid);
-        editor.apply(); // Apply changes
+//        editor.putString("session_id", uuid);
+//        editor.apply(); // Apply changes
 
         HttpService.sendPostRequest(data);
 
