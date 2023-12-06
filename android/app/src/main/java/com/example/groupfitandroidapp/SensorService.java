@@ -40,7 +40,8 @@ public class SensorService implements SensorEventListener {
 
 
         //Post update to server
-         client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}", "/post-workout-data");
+        // @Todo send data in right format to backend server
+        // client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}", "/post-workout-data");
 
     }
 

@@ -177,7 +177,14 @@ public class App extends Activity {
 
 
             String exerciseLogJson = "{\"exercise_type\":\"" + exerciseType + "\",\"reps_completed\":" + reps + ",\"participant_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_id\":\"" + workoutSessionId + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
-            HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data");
+            HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data",
+            jsonResponse -> {
+                //do whatever has to be one on success
+            }, error -> {
+                error.printStackTrace();
+                    }
+
+            );
         }
 
     }
@@ -191,5 +198,3 @@ public class App extends Activity {
     }
 
 }
-//start app, join session and create session
-//for join session - automatically go to the heart rate and r

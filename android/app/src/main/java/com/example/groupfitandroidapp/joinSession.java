@@ -59,7 +59,27 @@ public class joinSession extends Activity {
                 String uuid = UUIDManager.getUUID(getApplicationContext());
                 String exerciseLogJson = "{\"session_name\":\"" + enteredName + "\",\"user_id\":\"" + uuid
                 + "\"}";
-                HttpService.sendPostRequest(exerciseLogJson, "/join-session");
+
+                HttpService.sendPostRequest(exerciseLogJson, "/join-session",
+                        jsonResponse -> {
+
+                    // on sucess
+                            System.out.println(jsonResponse);
+
+
+                            //@ToDo save the returned session_id somewhere
+                            // the json looks like this:
+                            // {"session_name": "My 11 session", "creator_id": "eyJhbGciOiJSU0EtT0FF", "participants": [], "session_id":
+                            //"d3c403fb-4dcc-4854-84e6-eb15838d4c7d", "state": "created", "_id": "656fd61ce8a1af49a673e931"}
+
+                        }, error -> {
+                        //onError
+                            System.out.println(error.getStackTrace());
+                        }
+
+                        );
+
+
                 Intent intent = new Intent(joinSession.this, App.class);
 
                 // Start the new activity
