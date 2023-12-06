@@ -4,19 +4,22 @@ Goes here
 
 ## Available endpoints
 
-- `POST` /create-session
+- `POST` /create-session 
+- Creates a new session and returns the created session.
   - Request body:
     - `session_name`: string
-    - `creator`: string
+    - `creator_id`: string
 
 
 - `POST` /join-session
-  - Request body:
-    - `session_id`: string
-    - `user_id`: string
+- Adds a user to a existing session and returns the session.
+- Request body:
+  - `session_name`: string
+  - `user_id`: string
 
 
 - `GET` /get-sessions
+- Returns a list of all sessions.
     - Request body: None
     - Response body:
         - `sessions`: list of strings

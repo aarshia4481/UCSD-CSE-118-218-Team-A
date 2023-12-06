@@ -194,6 +194,19 @@ def test():
     return "hello world", 200
 
 
+@app.route('/', methods=['GET'])
+def index():
+    try:
+        # Read the content of the README.md file
+        with open('README.md', 'r') as file:
+            readme_content = file.read()
+
+        # Return the README content as the response
+        return readme_content, 200, {'Content-Type': 'text/plain'}
+    except FileNotFoundError:
+        return "README.md not found", 404
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=443, ssl_context=("adhoc"))
