@@ -2,37 +2,29 @@ import json
 import traceback
 
 from bson import ObjectId
-from flask import Flask, request, jsonify, Response, stream_with_context
+from flask import Flask, request, jsonify, Response
 from pymongo.mongo_client import MongoClient
 
 from AudioStream import AudioStream
-# # Inserting a workout session
-# workout_session = WorkoutSession("2023-11-30T10:00:00", "Gym XYZ")
-# mongo.db.workout_sessions.insert_one(workout_session.__dict__)
-#
-# # Inserting a participant
-# participant = Participant("John Doe", 30, "Male", 1)  # Assuming session ID is 1
-# mongo.db.participants.insert_one(participant.__dict__)
-#
-# # Inserting a heart rate measurement
-# heart_rate_measurement = HeartRateMeasurement("2023-11-30T10:15:00", 80, 1)  # Assuming participant ID is 1
-# mongo.db.heart_rate_measurements.insert_one(heart_rate_measurement.__dict__)
-#
-# # Inserting an exercise log
-# exercise_log = ExerciseLog("Bench Press", 10, 100, "2023-11-30T10:30:00", "2023-11-30T10:35:00", 1)  # Assuming participant ID is 1
-# mongo.db.exercise_logs.insert_one(exercise_log.__dict__)
 from WorkoutService import WorkoutService
 from model.DataModel import WorkoutSession, ExerciseLog
 
-# Example usage:
+
+''''
+    This is the main file for the GroupFit backend. It handles the following:
+    - serving all endpoints via Flask
+    - handling requests from the alexa
+    - handling requests from the watch
+    '''
+
 
 app = Flask(__name__)
 
-# Replace the connection string with your MongoDB URI
+# connect to database
 uri = "mongodb+srv://user:cse218@groupfit.l7ynwiw.mongodb.net/?retryWrites=true&w=majority"
-uri_local = 'localhost:27017'
-# Create a new client and connect to the server
 client = MongoClient(uri)
+
+
 # Send a ping to confirm a successful connection
 try:
     client.admin.command('ping')
@@ -90,8 +82,6 @@ def createWorkoutSession():
 
 
         return json.dumps(session_dict), 200
-
-
 
 
 @app.route('/get-sessions', methods=["GET"])

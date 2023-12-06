@@ -1,11 +1,18 @@
-import requests
-
-from dotenv import load_dotenv
 import os
 
+import requests
+from dotenv import load_dotenv
 
 
 class TextToSpeechService:
+    '''
+    TextToSpeechService is responsible for generating audio files from text.
+    It uses the Microsoft Azure Text-to-Speech API.
+    Access to the API is restricted by an API key, which is stored in the .env file.
+    # excluded from git, deleted as of now as we don't follow this approach
+    '''
+
+
     # Load variables from the .env file
     load_dotenv()
 

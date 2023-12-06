@@ -9,6 +9,15 @@ from TextToSpeechService import TextToSpeechService
 
 class WorkoutService(Thread):
 
+    '''
+    WorkoutService is a thread that runs in the background and handles the workout session.
+    It is responsible for:
+        - checking if there is new data from participants in the database
+        - generating audio feedback for participants by calling TextToSpeechService
+        - save these audio files in /audio/<session_name>
+        - audio is later accessed by Alexa via url/stream_audio/<session_name>
+    '''
+
     def __init__(self, session_id, session_name):
         Thread.__init__(self)
         self.session_id = session_id
