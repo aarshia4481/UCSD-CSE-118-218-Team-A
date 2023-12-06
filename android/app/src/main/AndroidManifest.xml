@@ -25,13 +25,37 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
 
-        <activity android:name=".App"
+
+
+
+        <activity android:name=".Session"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <activity android:name=".App"
+            android:exported="true">
+
+        </activity>
+
+        <activity android:name=".createSession"
+            android:exported="true">
+
+        </activity>
+
+        <activity android:name=".joinSession"
+            android:exported="true">
+
+        </activity>
+
+
+
+
+
 
     </application>
 

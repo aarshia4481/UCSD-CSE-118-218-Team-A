@@ -5,7 +5,7 @@
 import uuid
 
 
-class WorkoutSession:
+class WorkoutSession(object):
     def __init__(self, session_name, creator_id, participants=[]):
         self.session_name = session_name
         self.creator_id = creator_id

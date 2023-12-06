@@ -1,6 +1,7 @@
 import json
 import traceback
 
+from bson import ObjectId
 from flask import Flask, request, jsonify, Response, stream_with_context
 from pymongo.mongo_client import MongoClient
 
@@ -82,7 +83,15 @@ def createWorkoutSession():
         #insert session into database
         db.get_collection("workout_sessions").insert_one(new_session.__dict__)
 
-        return "Session created.", 200
+        session_dict = new_session.__dict__
+        for key, value in session_dict.items():
+            if isinstance(value, ObjectId):
+                session_dict[key] = str(value)  # Convert ObjectId to string
+
+
+        return json.dumps(session_dict), 200
+
+
 
 
 @app.route('/get-sessions', methods=["GET"])
@@ -112,7 +121,17 @@ def joinWorkoutSession():
                 #update session in database
                 db.get_collection("workout_sessions").update_one({"session_name": join_request["session_name"]}, {"$push": {"participants": join_request["user_id"]}})
 
-                return "Participant added to session.", 200
+                #retrieve new session data
+                updated_session = db.get_collection("workout_sessions").find_one({"session_name": join_request["session_name"]})
+
+
+                for key, value in updated_session.items():
+                    if isinstance(value, ObjectId):
+                        updated_session[key] = str(value)  # Convert ObjectId to string
+
+                return json.dumps(updated_session), 200
+
+
         else:
                 return "Session does not exist.", 400
 
