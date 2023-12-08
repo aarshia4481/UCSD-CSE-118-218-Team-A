@@ -1,7 +1,4 @@
-
-
-
-# Define workout data model
+import datetime
 import uuid
 
 
@@ -14,11 +11,17 @@ class WorkoutSession(object):
         self.state = "created"
 
 
-class user:
+class User:
      def __init__(self,  alexa_id, watch_id):
             self.name = "Participant"
             self.alexa_id = alexa_id
             self.watch_id = watch_id
+            self.plan = WorkoutPlan()
+
+class WorkoutPlan:
+    def __init__(self, ):
+        self.exercises = [{"exercise_type": "SQUATS", "reps": 10}, {"exercise_type": "CURLS", "reps": 10}, {"exercise_type": "SQUATS", "reps": 10}]
+        self.date = datetime.datetime.now().date()
 
 class HeartRateMeasurement:
     def __init__(self, timestamp, heart_rate, user_id, workout_session_name):

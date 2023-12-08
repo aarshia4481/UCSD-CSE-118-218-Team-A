@@ -64,8 +64,31 @@ def get_status():
     else:
         return "Sorry, I could not find an existing workout session. Please create a session first.", 200
 
+@app.route("/get-plan-for-today", methods=['GET'])
+def get_plan_for_today():
 
+    #get users workout plan from database
+    # atm this is just a mock saved for every user in database
 
+    #get alexa_id from request
+    alexa_id = request.args.get('alexa_id')
+
+    if alexa_id is None:
+        return "No alexa_id provided", 400
+
+    #get user from database
+    user = db.get_collection("users").find_one({"alexa_id": alexa_id})
+
+    #if user does not exist, return error
+    if user is None:
+        return "No user found", 400
+
+    #get workout plan from database
+    workout_plan = db.get_collection("users").find_one({"alexa_id": alexa_id})["plan"]
+
+    output = "Your workout plan for today is: You will do " + str(workout_plan["exercises"][0]["reps"]) + " " + workout_plan["exercises"][0]["exercise_type"] + ", " + str(workout_plan["exercises"][1]["reps"]) + " " + workout_plan["exercises"][1]["exercise_type"] + ", and " + str(workout_plan["exercises"][2]["reps"]) + " " + workout_plan["exercises"][2]["exercise_type"] + "."
+
+    return output, 200
 
 @app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
