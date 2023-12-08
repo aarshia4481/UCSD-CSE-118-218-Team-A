@@ -9,7 +9,7 @@ class WorkoutSession(object):
         self.participants = participants
         self.session_id = str(uuid.uuid4())
         self.state = "created"
-
+        self.exerciseLog = []
 
 class User:
      def __init__(self,  alexa_id, watch_id):
@@ -31,11 +31,10 @@ class HeartRateMeasurement:
         self.workout_session_name = workout_session_name
 
 class ExerciseLog:
-    def __init__(self, exercise_type, reps_completed, participant_id, workout_session_id, timestamp):
+    def __init__(self, exercise_type, reps_completed, watch_id, timestamp):
         self.exercise_type = exercise_type
         self.reps_completed = reps_completed
-        self.participant_id = participant_id
-        self.workout_session_id = workout_session_id
+        self.watch_id = watch_id
         self.timestamp = timestamp
 
 

@@ -90,6 +90,37 @@ def get_plan_for_today():
 
     return output, 200
 
+@app.route("/get-workout-live-metrics", methods=['GET'])
+def get_workout_live_metrics():
+
+    #get alexa_id from request
+    alexa_id = request.args.get('alexa_id')
+
+    if alexa_id is None:
+        return "No alexa_id provided", 400
+
+    #get correspoding watch_id from database
+    watch_id = db.get_collection("users").find_one({"alexa_id": alexa_id})["watch_id"]
+
+    #get workout from database, where status is ongoing and one of the entries in participant list is the watch_id
+    workout = db.get_collection("workout_sessions").find_one({"state": "ongoing", "participants": {"$in": [watch_id]}})
+
+    #get logs from this workout
+    logs = workout["exercise_log"]
+
+    #get last log with matching watch_id
+    logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
+
+    if not logs_for_watch_id:
+        return None  # No logs found for the given watch_id
+
+    latest_log = max(logs_for_watch_id, key=lambda x: x['timestamp'])
+
+    output = "You have completed " + str(latest_log["reps_completed"]) + " " + latest_log["exercise_type"] + "." + "The avg heart rate for this exercise was " + str(80) + " beats per minute."
+
+    return output, 200
+
+
 @app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
     if request.method == 'POST':
