@@ -16,6 +16,7 @@ class WorkoutSession(object):
 
 class user:
      def __init__(self,  alexa_id, watch_id):
+            self.name = "Participant"
             self.alexa_id = alexa_id
             self.watch_id = watch_id
 

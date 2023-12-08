@@ -37,6 +37,35 @@ db = client.get_database("groupfit")
 collection = db.get_collection("workout_sessions")
 
 
+@app.route("/get-status", methods=['GET'])
+def get_status():
+
+    #get alexa_id from request
+    alexa_id = request.args.get('alexa_id')
+
+    if alexa_id is None:
+        return "No alexa_id provided", 400
+
+    #get correspoding watch_id from database
+    watch_id = db.get_collection("users").find_one({"alexa_id": alexa_id})["watch_id"]
+
+    if watch_id is None:
+        return "No connected watch found", 400
+
+    print(watch_id)
+
+    #get workout from database, where status is created and one of the entries in participant list is the watch_id
+    workout = db.get_collection("workout_sessions").find_one({"state": "created", "participants": {"$in": [watch_id]}})
+
+    #if there is a workout, return the workout session name
+    if workout is not None:
+        output = "I found an exisitng workout session with the name " + workout["session_name"] + ". Would you like to start this session?"
+        return jsonify(output), 200
+    else:
+        return "Sorry, I could not find an existing workout session. Please create a session first.", 200
+
+
+
 
 @app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
@@ -209,6 +238,8 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=443, ssl_context=("adhoc"))
+    app.run(debug=True, ssl_context=("adhoc"))
+
+    #port 443
 
 
