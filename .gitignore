@@ -3,4 +3,8 @@
 /.idea/
 /server/data/
 .idea/UCSD-CSE-118-218-Team-A.iml
-/android/.gradle/
+/android/.gradle/*
+android/.gradle/8.0/fileHashes/fileHashes.lock
+android/.gradle/8.0/fileHashes/fileHashes.lock
+android/.gradle/8.0/fileHashes/fileHashes.lock
+android/.gradle/buildOutputCleanup/outputFiles.bin

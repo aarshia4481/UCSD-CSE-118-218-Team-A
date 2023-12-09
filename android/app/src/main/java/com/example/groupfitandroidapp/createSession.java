@@ -1,11 +1,18 @@
 package com.example.groupfitandroidapp;
 
+import static java.lang.Thread.sleep;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.google.firebase.crashlytics.buildtools.api.net.Constants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class createSession extends Activity {
     @Override
@@ -41,10 +48,14 @@ public class createSession extends Activity {
 
                 );
 
-                Intent intent = new Intent(createSession.this, App.class);
 
-                // Start the new activity
-                startActivity(intent);
+
+
+
+
+               Intent intent = new Intent(createSession.this, waitForUsers.class);
+               // Start the new activity
+              startActivity(intent);
 
 //                Intent resultIntent = new Intent();
 //                resultIntent.putExtra("name", enteredName);
@@ -54,6 +65,13 @@ public class createSession extends Activity {
 //                finish();
             }
         });
+
+
+    }
+
+
+    protected void onResume() {
+        super.onResume();
 
 
     }
