@@ -18,7 +18,8 @@ public class waitForUsers extends Activity {
 
 
     private final Handler handler = new Handler(Looper.getMainLooper());
-    Boolean queryParticpants = false;
+    private Boolean queryParticpants = false;
+    private String sessionName;
 
 
         @Override
@@ -27,15 +28,26 @@ public class waitForUsers extends Activity {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.waiting_for_participants);
             Button buttonStart = findViewById(R.id.buttonStart);
+            Intent intent = getIntent();
+            sessionName = intent.getStringExtra("sessionName");
+
             buttonStart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
                     //send start to server
+                    String body = "{\"session_name\":\"" + sessionName + "\"}";
 
-                    Intent intent = new Intent(waitForUsers.this, App.class);
+                    HttpService.sendPostRequest(body, "/start-session", jsonResponse -> {
+                        System.out.println(jsonResponse);
+                    }, error -> {
+                        error.printStackTrace();
+                    });
+
+                    Intent next_intent = new Intent(waitForUsers.this, App.class);
+                    next_intent.putExtra("sessionName", sessionName);
                     // Start the new activity
-                    startActivity(intent);
+                    startActivity(next_intent);
                     queryParticpants=false;
 
                 }

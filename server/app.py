@@ -269,8 +269,9 @@ def startWorkoutSession():
     if request.method == "POST":
 
         #get parameters
-        session_id = request.get_json()["session_id"]
+
         session_name = request.get_json()["session_name"]
+        session_id = ""
 
         workout_service = WorkoutService(session_id, session_name)
         workout_service.start()

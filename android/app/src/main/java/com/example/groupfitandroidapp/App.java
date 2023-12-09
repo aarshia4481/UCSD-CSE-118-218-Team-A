@@ -2,9 +2,7 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -47,7 +45,7 @@ public class App extends Activity {
     private TextView repCounterTextView;
     private HealthServicesClient healthClient;
     private ExerciseClient exerciseClient;
-    private SharedPreferences sharedPref;
+
 
 
     @Override
@@ -68,17 +66,6 @@ public class App extends Activity {
         String uuid = UUIDManager.getUUID(getApplicationContext());
 
 
-        // Get SharedPreferences instance to store data between activities such as group session id
-        sharedPref = getSharedPreferences("groupfit.SHARED_PREFERENCES", Context.MODE_PRIVATE);
-
-        // Get SharedPreferences editor
-        SharedPreferences.Editor editor = sharedPref.edit();
-
-        // Put data into SharedPreferences
-        editor.putString("uuid", uuid);
-
-
-        editor.apply(); // Apply changes
 
     }
 
@@ -162,9 +149,7 @@ public class App extends Activity {
 
             //send data to server
             String exerciseType = String.valueOf(ExerciseType.SQUAT);
-            String workoutSessionId = sharedPref.getString("session_id", "none");
-
-
+            String workoutSessionId = "";
 
             String exerciseLogJson = "{\"exercise_type\":\"" + exerciseType + "\",\"reps_completed\":" + reps + ",\"participant_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_id\":\"" + workoutSessionId + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
             HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data",
