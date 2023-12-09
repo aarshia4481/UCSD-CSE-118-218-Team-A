@@ -152,7 +152,6 @@ def get_workout_live_metrics():
         return output, 200
 
 
-
 @app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
     if request.method == 'POST':
@@ -160,15 +159,19 @@ def handle_post_request():
             # Get the JSON data sent by the client
             data = request.get_json()
 
-            if (data["datatype"] == "hr_data"):
-                #insert new datapoint into database
-                print(db.get_collection("heart_rate_measurements"))
-                db.get_collection("heart_rate_measurements").insert_one({"value": data["value"], "user_id": data["user_id"], "workout_session_name": data["workout_session_name"], "timestamp": data["timestamp"]})
 
-            elif data["datatype"] == "rep_counter":
+            #get workout session name from request
 
-                #insert new datapoint into database
-                db.get_collection("exercise_logs").insert_one(ExerciseLog(data["exercise_type"], data["reps_completed"], data["participant_id"], data["workout_session_id"], data["timestamp"]).__dict__)
+            workout_session_name = data["workout_session_name"]
+
+            #find workout session in database
+            workout_session = db.get_collection("workout_sessions").find_one({"session_name": workout_session_name})
+
+            #append data to exercise log
+            workout_session["exercise_log"].append(data)
+
+            #save workout session in database
+            db.get_collection("workout_sessions").replace_one({"session_name": workout_session_name}, workout_session)
 
             return 'Data saved.', 200
 
@@ -280,6 +283,26 @@ def startWorkoutSession():
 
 
         return "Session started.", 200
+
+
+@app.route("/get-participants", methods=["GET"])
+def getParticipants():
+    if request.method == "GET":
+
+        #get parameters
+        session_name = request.args.get("session_name")
+
+        if session_name == None:
+            return "No session name provided.", 400
+
+        # check if session exists in database
+        participants = db.get_collection("workout_sessions").find_one({"session_name": session_name})["participants"]
+
+
+
+        return jsonify({"participants": participants}), 200
+
+
 
 
 @app.route('/stream_audio/')
