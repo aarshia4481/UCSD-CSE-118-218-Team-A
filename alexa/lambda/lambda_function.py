@@ -85,8 +85,12 @@ class StartWorkoutIntentHandler(AbstractRequestHandler):
             else:
                 speak_output = "Cannot fetch correct data"
                 session_attr['workoutSessionState'] = None
+                
         except:
             speak_output = "Error in fetching data"
+        
+        # Try to get session state - if workout started on watch just send whatever speak_output
+        # If workout is started, speak_output becomes "Please start on watch and say yes again"
                 
         return (
             handler_input.response_builder
@@ -96,11 +100,11 @@ class StartWorkoutIntentHandler(AbstractRequestHandler):
         )
 
 
-class StartWorkoutIntentHandler(AbstractRequestHandler):
+class NextWorkoutIntentHandler(AbstractRequestHandler):
     """Handler for Start Workout Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("StartWorkoutIntent")(handler_input)
+        return ask_utils.is_intent_name("NextWorkoutIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
@@ -109,21 +113,12 @@ class StartWorkoutIntentHandler(AbstractRequestHandler):
         
         session_attr = handler_input.attributes_manager.session_attributes
         
-        try:
-            query_url = base_url + "get-sessions"
-            response = requests.get(query_url)
-            if response.status_code == 200:
-                print(response.content)
-                data = json.loads(response.content)[5]
-                print(data)
-                logger.info("Data Received: "+ data['state'])
-                speak_output = "Let us start this workout. To start session say 'start session' and wait. Data dump is "+ data['state']
-                session_attr['workoutSessionState'] = data['state']
-            else:
-                speak_output = "Cannot fetch correct data"
-                session_attr['workoutSessionState'] = None
-        except:
-            speak_output = "Error in fetching data"
+        speak_output = """<speak><amazon:effect name="whispered">Welcome.</amazon:effect>. Normal Voice</speak>"""
+        # speak_output "Here is your next workout"
+        
+        # Check if session has been started
+        # if yes - GET next workout
+        # else say - speech("you don't have any workout in process. Please start from watch and say begin workout") -- as reprompt
                 
         return (
             handler_input.response_builder
@@ -253,6 +248,8 @@ sb = SkillBuilder()
 sb.add_request_handler(LaunchRequestHandler())
 
 sb.add_request_handler(StartWorkoutIntentHandler())
+sb.add_request_handler(NextWorkoutIntentHandler())
+
 # sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
