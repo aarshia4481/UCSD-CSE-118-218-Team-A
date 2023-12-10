@@ -109,7 +109,9 @@ def get_workout_live_metrics():
 
     # get workout from database, where status is ongoing and one of the entries in participant list is the watch_id
     workout = db.get_collection("workout_sessions").find_one(
-        {"state": "ongoing", "participants": {"$in": [watch_id]}})
+        {"participants": {"$in": [watch_id]}})
+
+    print(workout)
 
     if participant_name is None:
         # endpoint servers live metrics for participant that is currently talking to alexa
@@ -117,6 +119,9 @@ def get_workout_live_metrics():
 
         #get logs from this workout
         logs = workout["exercise_log"]
+
+        if logs == []:
+            return "Sorry, I could not find any logs for this participant in your session", 200
 
         #get last log with matching watch_id
         logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
@@ -126,7 +131,7 @@ def get_workout_live_metrics():
 
         latest_log = max(logs_for_watch_id, key=lambda x: x['timestamp'])
 
-        output = "You have completed " + str(latest_log["reps_completed"]) + " " + latest_log["exercise_type"] + "." + "The avg heart rate for this exercise was " + str(80) + " beats per minute."
+        output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The avg heart rate for this exercise was " + str(80) + " beats per minute."
 
         return output, 200
 
@@ -136,7 +141,13 @@ def get_workout_live_metrics():
         #get logs from this workout
         logs = workout["exercise_log"]
 
+        if logs == []:
+            return "Sorry, I could not find any logs for this participant in your session", 200
+
         #get watch_id for participant
+        #parse name to lowercase
+        participant_name = participant_name.lower()
+
         print(participant_name)
         watch_id = db.get_collection("users").find_one({"name": participant_name})["watch_id"]
 
@@ -148,9 +159,86 @@ def get_workout_live_metrics():
 
         latest_log = max(logs_for_watch_id, key=lambda x: x['timestamp'])
 
-        output = participant_name + " has completed " + str(latest_log["reps_completed"]) + " " + latest_log["exercise_type"] + "."
+        output = participant_name + " has completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "."
         return output, 200
 
+
+@app.route("/get-workout-summary", methods=['GET'])
+def get_workout_summary():
+
+    #get alexa_id from request
+    alexa_id = request.args.get('alexa_id')
+
+    #get particpant_name from request (not required)
+    participant_name = request.args.get('participant_name')
+
+    if alexa_id is None:
+        return "No alexa_id provided", 400
+
+    #get corresponding watch_id from database
+    watch_id = db.get_collection("users").find_one({"alexa_id": alexa_id})["watch_id"]
+
+    #get workout from database, where one of the entries in participant list is the watch_id
+    workout = db.get_collection("workout_sessions").find_one({"participants": {"$in": [watch_id]}})
+
+    #get logs from this workout for watch_id
+    logs = workout["exercise_log"]
+
+    if logs == []:
+        return "Sorry, there are no records for this participant in your session", 200
+
+    #get all logs where datatype and watch_id is equal to watch_id or if participant is specified get their logs
+
+    if participant_name is None:
+        logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
+    else:
+        #get watch_id for participant
+        #parse name to lowercase
+        participant_name = participant_name.lower()
+
+        #get in database
+        watch_id = db.get_collection("users").find_one({"name": participant_name})["watch_id"]
+        print(watch_id)
+
+        #get last log with matching watch_id
+        logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
+
+
+
+    if not logs_for_watch_id:
+        return "Sorry, there are no records for this participant in your session", 200
+
+    #get all logs where datatype is equal to heartrate
+    heartrate_logs = [log for log in logs_for_watch_id if log['datatype'] == "HEARTRATE"]
+    print(heartrate_logs)
+
+    #get all logs where datatype is unequal to heartrate
+    exercise_logs = [log for log in logs_for_watch_id if log['datatype'] != "HEARTRATE"]
+    print(exercise_logs)
+    print(watch_id)
+
+    #determine start and end time of workout parse timestamp to milliseconds
+    start = int(exercise_logs[0]["timestamp"])
+    end = int(exercise_logs[-1]["timestamp"])
+
+    #calculate duration in minutes and seconds (timestamp in milliseconds)
+    duration = (end - start) / 1000
+
+    #form a string to min and seconds
+    duration = str(int(duration/60)) + " minutes and " + str(int(duration%60)) + " seconds"
+
+    #calculate heartrate average
+    if not heartrate_logs == []:
+        heartrate_average = sum([log["value"] for log in heartrate_logs]) / len(heartrate_logs)
+    else:
+        heartrate_average = 0
+
+    if participant_name is None:
+        output = "You have completed " + str(len(exercise_logs)) + " repetitions in " + duration + " seconds. Your average heart rate was " + str(heartrate_average) + " beats per minute."
+    else:
+        output = participant_name + " has completed " + str(len(exercise_logs)) + " repetitions in " + duration + " seconds." + participant_name + "average heart rate was " + str(heartrate_average) + " beats per minute. "
+
+    return output, 200
 
 @app.route('/send-workout-data', methods=['POST'])
 def handle_post_request():
@@ -266,7 +354,6 @@ def finsihWorkoutSession():
         else:
             return "Session does not exist.", 400
 
-
 @app.route("/start-session", methods=["POST"])
 def startWorkoutSession():
     if request.method == "POST":
@@ -284,7 +371,6 @@ def startWorkoutSession():
 
         return "Session started.", 200
 
-
 @app.route("/get-participants", methods=["GET"])
 def getParticipants():
     if request.method == "GET":
@@ -301,8 +387,6 @@ def getParticipants():
 
 
         return jsonify({"participants": participants}), 200
-
-
 
 
 @app.route('/stream_audio/')

@@ -3,13 +3,13 @@ import uuid
 
 
 class WorkoutSession(object):
-    def __init__(self, session_name, creator_id, participants=[]):
+    def __init__(self, session_name, creator_id):
         self.session_name = session_name
         self.creator_id = creator_id
-        self.participants = participants
+        self.participants = [creator_id]
         self.session_id = str(uuid.uuid4())
         self.state = "created"
-        self.exerciseLog = []
+        self.exercise_log = []
 
 class User:
      def __init__(self,  alexa_id, watch_id):
