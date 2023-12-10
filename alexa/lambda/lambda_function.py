@@ -27,20 +27,57 @@ class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-
         return ask_utils.is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Welcome to Group Fit. How should I help you today? To start, say start workout"
-
+        
+        session_attr = handler_input.attributes_manager.session_attributes
+        
+        device_id = handler_input.request_envelope.context.system.device.device_id
+        device_id = "1"
+        query_url = base_url + "get-plan-for-today?alexa_id="+device_id
+        
+        speak_output = """<amazon:emotion name="excited" intensity="high">Welcome to Group Fit.</amazon:emotion> I'm excited to be your workout partner today. """
+        
+        try:
+            print(query_url)
+            response = requests.get(query_url)
+            print(response)
+            
+            if response.status_code == 200:
+                print(response.content)
+                
+                # Assumption plan is a string
+                plan :str = str(response.content, 'UTF-8')
+                # data = json.loads(response.content)[5]
+                print(plan)
+                logger.info("Data Received: "+ plan)
+                speak_output += " Your planned workout for today is "+ plan
+                session_attr['workoutSessionPlan'] = plan
+                
+                return (
+                    handler_input.response_builder
+                        .speak("<speak>"+speak_output+"</speak>")
+                        # .ask(speak_output)
+                        .response
+                )
+            else:
+                speak_output += "There was an error in fetching your plan."
+                
+        except:
+            session_attr['workoutSessionPlan'] = None
+            speak_output += "There was an error in fetching your plan."
+            
+            # speak_output = "Welcome to Group Fit. Let's start "
+        
+        reprompt = "Please come back again by saying open Group Workout "
         return (
             handler_input.response_builder
-                .speak(speak_output)
-                .ask(speak_output)
+                .speak("<speak>"+speak_output+"</speak>")
+                .ask(reprompt)
                 .response
         )
-
 
 # class HelloWorldIntentHandler(AbstractRequestHandler):
 #     """Handler for Hello World Intent."""
@@ -72,26 +109,11 @@ class StartWorkoutIntentHandler(AbstractRequestHandler):
         
         session_attr = handler_input.attributes_manager.session_attributes
         
-        try:
-            query_url = base_url + "get-sessions"
-            response = requests.get(query_url)
-            if response.status_code == 200:
-                print(response.content)
-                data = json.loads(response.content)[5]
-                print(data)
-                logger.info("Data Received: "+ data['state'])
-                speak_output = "Let us start this workout. To start session say 'start session' and wait. Data dump is "+ data['state']
-                session_attr['workoutSessionState'] = data['state']
-            else:
-                speak_output = "Cannot fetch correct data"
-                session_attr['workoutSessionState'] = None
-                
-        except:
-            speak_output = "Error in fetching data"
-        
         # Try to get session state - if workout started on watch just send whatever speak_output
         # If workout is started, speak_output becomes "Please start on watch and say yes again"
-                
+
+        speak_output = "Let's go! Your workout seems to be in session. "
+
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -113,7 +135,9 @@ class NextWorkoutIntentHandler(AbstractRequestHandler):
         
         session_attr = handler_input.attributes_manager.session_attributes
         
-        speak_output = """<speak><amazon:effect name="whispered">Welcome.</amazon:effect>. Normal Voice</speak>"""
+        # speak_output = """<speak><amazon:effect name="whispered">Welcome.</amazon:effect>. Normal Voice</speak>"""
+        speak_output = " Device id is "+str(device_id)
+        speak_output += " user id is "+str(user_id)
         # speak_output "Here is your next workout"
         
         # Check if session has been started
@@ -126,7 +150,151 @@ class NextWorkoutIntentHandler(AbstractRequestHandler):
                 # .ask("add a reprompt if you want to keep the session open for the user to respond")
                 .response
         )
+        
+    
+class ShowWorkoutStatusIntentHandler(AbstractRequestHandler):
+    """Handler for Start Workout Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("ShowWorkoutStatusIntent")(handler_input)
 
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        
+        # Contains slot - FriendName
+        
+        # For individual user
+        # GET workout status, show info in speak_output; change voice <amazon:emotion name='excited'>
+        # If workout is over show summary
+        # If workout in progress show current state
+        
+        # For friend, get same info for friend
+        # Show speak output with that information
+        # Same as above
+        
+        # type: (HandlerInput) -> Response
+        session_attr = handler_input.attributes_manager.session_attributes
+        
+        device_id = handler_input.request_envelope.context.system.device.device_id
+        device_id = "1"
+        
+        query_url = base_url + "get-workout-live-metrics?alexa_id="+device_id
+        
+        slots = handler_input.request_envelope.request.intent.slots
+        name = slots['FriendName']
+        if name.value:
+            print("Found friend detail", type(name), name.value)
+            # take me down to the paradise city
+            query_url += "&participant_name="+str(name.value)
+        else:
+            print("Not found friend detail")
+            # this city was not built on rock'n'roll
+        
+        try:
+            print(query_url)
+            response = requests.get(query_url)
+            print("Received Response: ", response)
+            
+            if response.status_code == 200:
+                print(response.content)
+                
+                # Assumption plan is a string
+                status :str = str(response.content, 'UTF-8')
+                # data = json.loads(response.content)[5]
+                print(status)
+                logger.info("Data Received: "+ status)
+                speak_output = "Here's a quick update on your status.   "+ status
+                session_attr['workoutSessionState'] = status
+                
+                return (
+                    handler_input.response_builder
+                        .speak(speak_output)
+                        # .ask(speak_output)
+                        .response
+                )
+        except:
+            session_attr['workoutSessionPlan'] = None
+            
+        speak_output = "There was an error in fetching your info."
+            
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                # .ask(reprompt)
+                .response
+        )
+
+class ShowWorkoutSummaryIntentHandler(AbstractRequestHandler):
+    """Handler for Start Workout Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("ShowWorkoutSummaryIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        
+        # Contains slot - FriendName
+        
+        # For individual user
+        # GET workout status, show info in speak_output; change voice <amazon:emotion name='excited'>
+        # If workout is over show summary
+        # If workout in progress show current state
+        
+        # For friend, get same info for friend
+        # Show speak output with that information
+        # Same as above
+        
+        # type: (HandlerInput) -> Response
+        session_attr = handler_input.attributes_manager.session_attributes
+        
+        device_id = handler_input.request_envelope.context.system.device.device_id
+        device_id = "1"
+        
+        query_url = base_url + "get-workout-summary?alexa_id="+device_id
+        
+        slots = handler_input.request_envelope.request.intent.slots
+        name = slots['FriendName']
+        if name.value:
+            print("Found friend detail", type(name), name.value)
+            # take me down to the paradise city
+            query_url += "&participant_name="+str(name.value)
+        else:
+            print("Not found friend detail")
+            # this city was not built on rock'n'roll
+        
+        try:
+            print(query_url)
+            response = requests.get(query_url)
+            print("Received Response: ", response)
+            
+            if response.status_code == 200:
+                print(response.content)
+                
+                # Assumption plan is a string
+                status :str = str(response.content, 'UTF-8')
+                # data = json.loads(response.content)[5]
+                print(status)
+                logger.info("Data Received: "+ status)
+                speak_output = "Here's a summary of the workout.   "+ status
+                session_attr['workoutSessionState'] = status
+                
+                return (
+                    handler_input.response_builder
+                        .speak(speak_output)
+                        # .ask(speak_output)
+                        .response
+                )
+        except:
+            session_attr['workoutSessionPlan'] = None
+            
+        speak_output = "There was an error in fetching your info."
+            
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                # .ask(reprompt)
+                .response
+        )
 
 class HelpIntentHandler(AbstractRequestHandler):
     """Handler for Help Intent."""
@@ -249,6 +417,8 @@ sb.add_request_handler(LaunchRequestHandler())
 
 sb.add_request_handler(StartWorkoutIntentHandler())
 sb.add_request_handler(NextWorkoutIntentHandler())
+sb.add_request_handler(ShowWorkoutStatusIntentHandler())
+sb.add_request_handler(ShowWorkoutSummaryIntentHandler())
 
 # sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
