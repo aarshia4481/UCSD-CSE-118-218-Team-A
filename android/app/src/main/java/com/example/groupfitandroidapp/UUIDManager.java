@@ -3,6 +3,7 @@ package com.example.groupfitandroidapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import java.util.UUID;
 
     public class UUIDManager {

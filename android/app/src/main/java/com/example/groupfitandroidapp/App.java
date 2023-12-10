@@ -2,9 +2,8 @@ package com.example.groupfitandroidapp;
 
 import android.app.Activity;
 import android.content.Context;
-
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,35 +20,31 @@ import androidx.health.services.client.data.ExerciseCapabilities;
 import androidx.health.services.client.data.ExerciseConfig;
 import androidx.health.services.client.data.ExerciseLapSummary;
 import androidx.health.services.client.data.ExerciseType;
-import androidx.health.services.client.data.ExerciseConfig;
-import androidx.health.services.client.data.ExerciseTypeCapabilities;
 import androidx.health.services.client.data.ExerciseUpdate;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.crashlytics.buildtools.api.net.Constants;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 
 
 public class App extends Activity {
-
-
     private ExerciseConfig.Builder exerciseConfigBuilder;
     private TextView heartRateTextView;
     private TextView repCounterTextView;
+    private TextView exerciseTypeTextView;
     private HealthServicesClient healthClient;
     private ExerciseClient exerciseClient;
-
+    private String sessionName;
+    private ExerciseType exerciseType;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        Intent intent = getIntent();
+        sessionName = intent.getStringExtra("sessionName");
 
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.session_selection_view);
@@ -60,7 +55,7 @@ public class App extends Activity {
 
         heartRateTextView = findViewById(R.id.textViewHeartRate);
         repCounterTextView = findViewById(R.id.textViewRepCounter);
-
+        exerciseTypeTextView = findViewById(R.id.textViewExerciseType);
 
         //get userID
         String uuid = UUIDManager.getUUID(getApplicationContext());
@@ -68,7 +63,6 @@ public class App extends Activity {
 
 
     }
-
 
     @Override
     protected void onStart() {
@@ -78,17 +72,18 @@ public class App extends Activity {
         exerciseClient = healthClient.getExerciseClient();
 
     }
-
     @Override
     protected void onResume() {
         super.onResume();
 
         //Try to access sensor data
         Context context = getApplicationContext();
-        //SensorService heartRate = new SensorService(context, client, heartRateTextView);
+        SensorService heartRate = new SensorService(context, heartRateTextView);
 
 
-        ExerciseType exerciseType = ExerciseType.SQUAT;
+        exerciseType = ExerciseType.SQUAT;
+
+        exerciseTypeTextView.setText(exerciseType.toString());
 
 
         //Everything after this is related to health services API
@@ -137,8 +132,6 @@ public class App extends Activity {
 
 
     }
-
-
     private void updateRepCount(ExerciseUpdate update) {
 
         List<DataPoint> rep_count = update.getLatestMetrics().get(DataType.REP_COUNT);
@@ -148,10 +141,10 @@ public class App extends Activity {
 
 
             //send data to server
-            String exerciseType = String.valueOf(ExerciseType.SQUAT);
+            String exerciseType_str = String.valueOf(exerciseType);
             String workoutSessionId = "";
 
-            String exerciseLogJson = "{\"exercise_type\":\"" + exerciseType + "\",\"reps_completed\":" + reps + ",\"participant_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_id\":\"" + workoutSessionId + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
+            String exerciseLogJson = "{\"datatype\":\"" + exerciseType_str + "\",\"value\":" + reps + ",\"watch_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_name\":\"" + sessionName + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
             HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data",
             jsonResponse -> {
                 //do whatever has to be done on success

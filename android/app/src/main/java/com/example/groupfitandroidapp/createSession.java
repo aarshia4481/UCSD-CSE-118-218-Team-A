@@ -1,7 +1,5 @@
 package com.example.groupfitandroidapp;
 
-import static java.lang.Thread.sleep;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,10 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.firebase.crashlytics.buildtools.api.net.Constants;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.json.JSONException;
 
 public class createSession extends Activity {
     @Override
@@ -35,11 +30,19 @@ public class createSession extends Activity {
                 HttpService.sendPostRequest(exerciseLogJson, "/create-session",
                         jsonResponse -> {
                             //onSuccess
-                            //@ToDo save the returned session_id somewhere
-                            // the json looks like this:
-                            // {"session_name": "My 11 session", "creator_id": "eyJhbGciOiJSU0EtT0FF", "participants": [], "session_id":
-                            //"d3c403fb-4dcc-4854-84e6-eb15838d4c7d", "state": "created", "_id": "656fd61ce8a1af49a673e931"}
 
+                            String sessionName;
+                            try {
+                                sessionName = jsonResponse.get("session_name").toString();
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            System.out.println(sessionName);
+                            Intent intent = new Intent(createSession.this, waitForUsers.class);
+                            // pass on sessionName to next activity
+                            intent.putExtra("sessionName", sessionName);
+                            startActivity(intent);
 
                         },
                         error -> {
@@ -48,14 +51,6 @@ public class createSession extends Activity {
 
                 );
 
-
-
-
-
-
-               Intent intent = new Intent(createSession.this, waitForUsers.class);
-               // Start the new activity
-              startActivity(intent);
 
 //                Intent resultIntent = new Intent();
 //                resultIntent.putExtra("name", enteredName);

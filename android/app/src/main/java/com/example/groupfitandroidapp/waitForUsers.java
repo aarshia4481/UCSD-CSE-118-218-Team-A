@@ -1,7 +1,5 @@
 package com.example.groupfitandroidapp;
 
-import static java.lang.Thread.sleep;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +8,9 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +39,8 @@ public class waitForUsers extends Activity {
                     //send start to server
                     String body = "{\"session_name\":\"" + sessionName + "\"}";
 
-                    HttpService.sendPostRequest(body, "/start-session", jsonResponse -> {
-                        System.out.println(jsonResponse);
+                    HttpService.sendPostRequest(body, "/get-participants", jsonResponse -> {
+
                     }, error -> {
                         error.printStackTrace();
                     });
@@ -59,18 +60,26 @@ public class waitForUsers extends Activity {
 
     private void getParticipants() {
         Map<String, String> params = new HashMap<>();
-        params.put("test", "test");
+        params.put("session_name", sessionName);
 
         new Thread(() -> {
             while (queryParticpants) {
                 // send get request to see if other users joined session
-                HttpService.sendGetRequest("/get-sessions", params,
+                HttpService.sendGetRequest("/get-participants", params,
                         jsonResponse -> {
                             System.out.println("GET request successful");
                             System.out.println(jsonResponse);
+                            int count_participants = 0;
+                            try {
+                                JSONArray participants = jsonResponse.getJSONArray("participants");
+                                count_participants = participants.length();
+
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
 
                             // Process the jsonResponse here
-                            String response = "Joined: " + jsonResponse; // Modify as needed
+                            String response = "Joined: " + count_participants; // Modify as needed
 
                             // Update UI using the handler
                             handler.post(() -> {

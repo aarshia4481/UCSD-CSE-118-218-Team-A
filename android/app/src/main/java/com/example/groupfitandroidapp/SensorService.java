@@ -7,26 +7,24 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.widget.TextView;
 
-import com.google.firebase.crashlytics.buildtools.api.net.Constants;
-
-import org.w3c.dom.Text;
-
 public class SensorService implements SensorEventListener {
 
-    private Sensor mHeartRateSensor;
-    private SensorManager mSensorManager;
-    private HttpService client;
+    private final Sensor mHeartRateSensor;
+    private final SensorManager mSensorManager;
 
-    private TextView textView;
+    private Context context;
+    private String sessionName;
+
+    private final TextView textView;
 
 
 
-    public SensorService(Context context, HttpService client, TextView text) {
+    public SensorService(Context context, TextView text) {
         mSensorManager =  (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         mSensorManager.registerListener(this, mHeartRateSensor, 5);
-        this.client = client;
         this.textView = text;
+        this.context = context;
     }
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -35,13 +33,18 @@ public class SensorService implements SensorEventListener {
         System.out.println("HeartRate ");
         System.out.println(heartRate);
 
-
         textView.setText("Heart Rate: " + heartRate + " bpm");
 
-
         //Post update to server
-        // @Todo send data in right format to backend server
-        // client.sendPostRequest("{\"heartRate\": \"" + heartRate  + "\"}", "/post-workout-data");
+        String body = "{\"datatype\":\"" + "HEARTRATE" + "\",\"value\":" + heartRate + ",\"watch_id\":\"" + UUIDManager.getUUID(context) + "\",\"workout_session_name\":\"" + this.sessionName + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
+        HttpService.sendPostRequest(body, "/send-workout-data",
+                jsonResponse -> {
+                    //do whatever has to be done on success
+                }, error -> {
+                    error.printStackTrace();
+                }
+
+        );
 
     }
 

@@ -2,18 +2,25 @@ package com.example.groupfitandroidapp;
 
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HttpService {
 
-    static String url = "https://groupfit-server.fly.dev";
+    //static String url = "https://groupfit-server.fly.dev";
+
+    //local
+    static String url =  "https://64c5-137-110-116-189.ngrok-free.app";
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public static void sendPostRequest(final String jsonData, String endpoint, Callback<JSONObject> onResponse, Callback<Exception> onError) {
@@ -30,7 +37,7 @@ public class HttpService {
 
                 // Send data
                 try (OutputStream os = con.getOutputStream()) {
-                    byte[] input = jsonData.getBytes("utf-8");
+                    byte[] input = jsonData.getBytes(StandardCharsets.UTF_8);
                     os.write(input, 0, input.length);
                 }
 
@@ -50,7 +57,7 @@ public class HttpService {
                     in.close();
 
                     // Print the response body
-                    System.out.println("Response Body: " + response.toString());
+                    System.out.println("Response Body: " + response);
 
                     // Parse JSON response
                     try {
@@ -115,13 +122,14 @@ public class HttpService {
                     in.close();
 
                     // Print the response body
-                    System.out.println("Response Body: " + response.toString());
+                    System.out.println("Response Body: " + response);
 
                     // Parse JSON response
                     try {
                         JSONObject jsonObject = new JSONObject(response.toString());
                         onResponse.execute(jsonObject); // Pass the JSON object through the callback
                     } catch (Exception e) {
+                        //@ToDo what if the response is no JSON? For now just create an empty object so the onSUccess callback is still called.
                         onResponse.execute(new JSONObject()); // Handle JSON parsing error
                     }
                 } else {
