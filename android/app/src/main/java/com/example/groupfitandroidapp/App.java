@@ -38,6 +38,7 @@ public class App extends Activity {
     private ExerciseClient exerciseClient;
     private String sessionName;
     private ExerciseType exerciseType;
+    private SensorService heartRateSensor;
 
 
     @Override
@@ -78,7 +79,7 @@ public class App extends Activity {
 
         //Try to access sensor data
         Context context = getApplicationContext();
-        SensorService heartRate = new SensorService(context, heartRateTextView);
+        heartRateSensor = new SensorService(context, heartRateTextView, sessionName);
 
 
         exerciseType = ExerciseType.SQUAT;
@@ -163,6 +164,8 @@ public class App extends Activity {
 
         super.onStop();
         ListenableFuture<Void> endExerciseListenableFuture =  exerciseClient.endExercise();
+        heartRateSensor.stop();
+
     }
 
 }

@@ -17,10 +17,10 @@ import java.util.concurrent.Executors;
 
 public class HttpService {
 
-    //static String url = "https://groupfit-server.fly.dev";
+    static String url = "https://groupfit-server.fly.dev";
 
     //local
-    static String url =  "https://64c5-137-110-116-189.ngrok-free.app";
+    //static String url =  "https://64c5-137-110-116-189.ngrok-free.app";
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public static void sendPostRequest(final String jsonData, String endpoint, Callback<JSONObject> onResponse, Callback<Exception> onError) {
