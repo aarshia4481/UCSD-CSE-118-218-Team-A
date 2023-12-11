@@ -21,12 +21,14 @@
         android:id="@+id/textViewRepCounter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="Waiting for other participants..." />
 
     <TextView
         android:id="@+id/countParticipants"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="Joined: " />
 
     <Button
