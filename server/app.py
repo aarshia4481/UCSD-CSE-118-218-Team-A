@@ -181,13 +181,14 @@ def get_workout_live_metrics():
             return None  # No logs found for the given watch_id
 
         heartrate_logs = [log for log in logs_for_watch_id if log['datatype'] == "HEARTRATE"]
+        exercise_logs = [log for log in logs_for_watch_id if log['datatype'] != "HEARTRATE"]
 
         if not heartrate_logs == []:
             heartrate_average = sum([log["value"] for log in heartrate_logs]) / len(heartrate_logs)
         else:
             heartrate_average = 0
 
-        latest_log = max(logs_for_watch_id, key=lambda x: x['timestamp'])
+        latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
 
         output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
 
@@ -216,13 +217,14 @@ def get_workout_live_metrics():
             return "Sorry, I could not find any logs for this participant in your session", 200
 
         heartrate_logs = [log for log in logs_for_watch_id if log['datatype'] == "HEARTRATE"]
+        exercise_logs = [log for log in logs_for_watch_id if log['datatype'] != "HEARTRATE"]
 
         if not heartrate_logs == []:
             heartrate_average = sum([log["value"] for log in heartrate_logs]) / len(heartrate_logs)
         else:
             heartrate_average = 0
 
-        latest_log = max(logs_for_watch_id, key=lambda x: x['timestamp'])
+        latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
 
         output = participant_name + " has completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
         return output, 200
