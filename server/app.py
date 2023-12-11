@@ -86,8 +86,7 @@ def get_plan_for_today():
     #get workout plan from database
     workout_plan = db.get_collection("users").find_one({"alexa_id": alexa_id})["plan"]
 
-    output = "Your workout plan for today is: You will do " + str(workout_plan["exercises"][0]["reps"]) + " " + workout_plan["exercises"][0]["exercise_type"] + ", " + str(workout_plan["exercises"][1]["reps"]) + " " + workout_plan["exercises"][1]["exercise_type"] + ", and " + str(workout_plan["exercises"][2]["reps"]) + " " + workout_plan["exercises"][2]["exercise_type"] + "."
-
+    output = "Here is your workout plan for today: You will do " + str(workout_plan["exercises"][0]["reps"]) + " " + workout_plan["exercises"][0]["exercise_type"] + ", " + str(workout_plan["exercises"][1]["reps"]) + " " + workout_plan["exercises"][1]["exercise_type"] + "."
     return output, 200
 
 @app.route("/next-workout", methods=['GET'])
@@ -190,7 +189,7 @@ def get_workout_live_metrics():
 
         latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
 
-        output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + " The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
+        output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "s." + " The average heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
 
         return output, 200
 
@@ -226,7 +225,7 @@ def get_workout_live_metrics():
 
         latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
 
-        output = participant_name + " has completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
+        output = participant_name + " has completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The average heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
         return output, 200
 
 
@@ -296,12 +295,12 @@ def get_workout_summary():
 
     #calculate heartrate average
     if not heartrate_logs == []:
-        heartrate_average = sum([log["value"] for log in heartrate_logs]) / len(heartrate_logs)
+        heartrate_average = sum([log["value"] for log in heartrate_logs]) // len(heartrate_logs)
     else:
         heartrate_average = 0
 
     if participant_name is None:
-        output = "You have completed " + str(len(exercise_logs)) + " repetitions in " + duration + " seconds. Your average heart rate was " + str(heartrate_average) + " beats per minute."
+        output = "You have completed " + str(len(exercise_logs)) + " repetitions in " + duration + ". Your average heart rate was " + str(heartrate_average) + " beats per minute."
     else:
         output = participant_name + " has completed " + str(len(exercise_logs)) + " repetitions in " + duration + " seconds." + participant_name + "average heart rate was " + str(heartrate_average) + " beats per minute. "
 
