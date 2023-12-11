@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -36,9 +39,14 @@ public class App extends Activity {
     private TextView exerciseTypeTextView;
     private HealthServicesClient healthClient;
     private ExerciseClient exerciseClient;
+    private PowerManager.WakeLock wakeLock;
+
+    private ExerciseUpdateListener exerciseUpdateListener;
     private String sessionName;
     private ExerciseType exerciseType;
     private SensorService heartRateSensor;
+    private Vibrator vibrator;
+    private long repetitions = 0;
 
 
     @Override
@@ -62,6 +70,16 @@ public class App extends Activity {
         String uuid = UUIDManager.getUUID(getApplicationContext());
 
 
+        // Acquire a WakeLock to prevent the screen from timing out
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (powerManager != null) {
+            wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    PowerManager.ON_AFTER_RELEASE, "YourApp:WakeLockTag");
+            wakeLock.acquire();
+        }
+
+
 
     }
 
@@ -71,6 +89,8 @@ public class App extends Activity {
 
         healthClient = HealthServices.getClient(this.getApplicationContext());
         exerciseClient = healthClient.getExerciseClient();
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
 
     }
     @Override
@@ -107,7 +127,7 @@ public class App extends Activity {
 
 
 
-        ExerciseUpdateListener exerciseUpdateListener =
+         exerciseUpdateListener =
                 new ExerciseUpdateListener() {
 
                     @Override
@@ -137,23 +157,64 @@ public class App extends Activity {
 
         List<DataPoint> rep_count = update.getLatestMetrics().get(DataType.REP_COUNT);
         if (rep_count != null) {
+
+
             long reps = rep_count.get(0).getValue().asLong();
-            repCounterTextView.setText("Rep counter: " + reps);
 
 
-            //send data to server
-            String exerciseType_str = String.valueOf(exerciseType);
-            String workoutSessionId = "";
+            // prevent that counting is set back to zero
+            if (reps <= repetitions) {
+                reps = repetitions + reps;
+            }
 
-            String exerciseLogJson = "{\"datatype\":\"" + exerciseType_str + "\",\"value\":" + reps + ",\"watch_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_name\":\"" + sessionName + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
-            HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data",
-            jsonResponse -> {
-                //do whatever has to be done on success
-            }, error -> {
-                error.printStackTrace();
-                    }
+            this.repetitions = reps;
 
-            );
+            if (reps >= 10 ) {
+                //start new exercise and vibrate
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+
+                //set next exercise in view and restart exercise cleint with new type
+                // hardcoded for now
+                exerciseTypeTextView.setText("CURLS");
+
+                exerciseClient.endExercise();
+
+                this.exerciseType = ExerciseType.DUMBBELL_CURL_LEFT_ARM;
+
+                ExerciseConfig config = ExerciseConfig.builder().setExerciseType(exerciseType).build();
+
+                ListenableFuture<Void> startExerciseListenableFuture =  exerciseClient.startExercise(config);
+                ListenableFuture<Void> updateListenableFuture = exerciseClient.setUpdateListener(exerciseUpdateListener);
+
+                this.repetitions = 0;
+                repCounterTextView.setText("Rep counter: " + repetitions);
+
+            } else {
+
+                //send data to server
+                String exerciseType_str = String.valueOf(exerciseType);
+                String workoutSessionId = "";
+
+
+
+                String exerciseLogJson = "{\"datatype\":\"" + exerciseType_str + "\",\"value\":" + reps + ",\"watch_id\":\"" + UUIDManager.getUUID(getApplicationContext()) + "\",\"workout_session_name\":\"" + sessionName + "\",\"timestamp\":\"" + System.currentTimeMillis() + "\"}";
+                HttpService.sendPostRequest(exerciseLogJson, "/send-workout-data",
+                        jsonResponse -> {
+                            //do whatever has to be done on success
+                        }, error -> {
+                            error.printStackTrace();
+                        }
+
+                );
+
+                repCounterTextView.setText("Rep counter: " + reps);
+
+            }
+
+
+
+
+
         }
 
     }
@@ -165,6 +226,10 @@ public class App extends Activity {
         super.onStop();
         ListenableFuture<Void> endExerciseListenableFuture =  exerciseClient.endExercise();
         heartRateSensor.stop();
+
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
 
     }
 

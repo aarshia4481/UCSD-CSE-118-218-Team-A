@@ -184,13 +184,13 @@ def get_workout_live_metrics():
         exercise_logs = [log for log in logs_for_watch_id if log['datatype'] != "HEARTRATE"]
 
         if not heartrate_logs == []:
-            heartrate_average = sum([log["value"] for log in heartrate_logs]) / len(heartrate_logs)
+            heartrate_average = sum([log["value"] for log in heartrate_logs]) // len(heartrate_logs)
         else:
             heartrate_average = 0
 
         latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
 
-        output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + "The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
+        output = "You have completed " + str(latest_log["value"]) + " " + latest_log["datatype"] + "." + " The avg heart rate for this exercise was " + str(heartrate_average) + " beats per minute."
 
         return output, 200
 
