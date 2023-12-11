@@ -90,6 +90,57 @@ def get_plan_for_today():
 
     return output, 200
 
+@app.route("/next-workout", methods=['GET'])
+def get_next_workout():
+
+    alexa_id = request.args.get('alexa_id')
+
+    #get particpant_name from request (not required)
+    participant_name = request.args.get('participant_name')
+
+    if alexa_id is None:
+        return "No alexa_id provided", 400
+
+    #get corresponding watch_id from database
+    watch_id = db.get_collection("users").find_one({"alexa_id": alexa_id})["watch_id"]
+
+    #get workout from database, where one of the entries in participant list is the watch_id
+    workout = db.get_collection("workout_sessions").find_one({"participants": {"$in": [watch_id]}})
+
+    #get logs from this workout for watch_id
+    logs = workout["exercise_log"]
+
+    if logs == []:
+        return "Sorry, there are no records for this participant in your session", 200
+
+    #get all logs where datatype and watch_id is equal to watch_id or if participant is specified get their logs
+
+    if participant_name is None:
+        logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
+    else:
+        #get watch_id for participant
+        #parse name to lowercase
+        participant_name = participant_name.lower()
+
+        #get in database
+        watch_id = db.get_collection("users").find_one({"name": participant_name})["watch_id"]
+        print(watch_id)
+
+        #get last log with matching watch_id
+        logs_for_watch_id = [log for log in logs if log['watch_id'] == watch_id]
+
+    exercise_logs = [log for log in logs_for_watch_id if log['datatype'] != "HEARTRATE"]
+
+    latest_log = max(exercise_logs, key=lambda x: x['timestamp'])
+
+    if latest_log["datatype"] == "SQUAT":
+        output = "Your next exercise is Curls. Please start the exercise when you are ready."
+    else:
+        output = "Your next exercise is Squats. Please start the exercise when you are ready."
+        
+
+    return output, 200
+
 @app.route("/get-workout-live-metrics", methods=['GET'])
 def get_workout_live_metrics():
 
